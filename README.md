@@ -19,7 +19,7 @@ This repository was originally developed by [GovTrack.us](https://www.govtrack.u
 
 ### Setting Up
 
-This project is tested using Python 3. hii
+This project is tested using Python 3.
 
 **System dependencies**
 
