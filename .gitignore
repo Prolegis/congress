@@ -57,3 +57,7 @@ docs/_build/
 
 # Local things
 /dev/
+
+# Stuff from Prolegis import scripts
+bill_status_codes.json
+bill_status_codes_import_log.txt
