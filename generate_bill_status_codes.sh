@@ -1,10 +1,58 @@
 #!/bin/bash
 
-cd ~/congress || exit # Change into the congress directory, if not already in it.
+log_file="bill_status_codes_import_log.txt" # Log file
+echo "Bill Status Codes Import started at $(date '+%Y-%m-%d %H:%M:%S')" >> log_file
+
+# Validate Production Key
+curl -s -H "Authorization: $API_KEY_PRODUCTION" https://www.prolegis.com/api/congress_repo/validate_key
+if [ "$response" -ne 200 ]; then
+  echo "Production key is invalid. HTTP status: $response" >> log_file
+  exit 1
+fi
+
+# Validate Staging Key
+curl -s -H "Authorization: $API_KEY_STAGING" https://stg.prolegis.com/api/congress_repo/validate_key
+if [ "$response" -ne 200 ]; then
+  echo "Staging key is invalid. HTTP status: $response" >> log_file
+  exit 1
+fi
+
+# Validate Demo Key
+curl -s -H "Authorization: $API_KEY_DEMO" https://stg.prolegis.com/api/congress_repo/validate_key
+if [ "$response" -ne 200 ]; then
+  echo "Demo key is invalid. HTTP status: $response" >> log_file
+  exit 1
+fi
+
+# Send a log message that the import has started
+response=$(curl -s -o /dev/null -w "%{http_code}" -X POST https://www.prolegis.com/api/congress_repo/log_message \
+-H "Authorization: $API_KEY_PRODUCTION" \
+-H "Content-Type: application/json" \
+-d "{\"message\": \"Bill Status Codes Import started at $(date '+%Y-%m-%d %H:%M:%S')\", \"level\": \"info\"}")
+
+cd ~
+
+# Clone from GitHub if not already cloned.
+git clone "https://$GITHUB_PERSONAL_ACCESS_TOKEN@github.com/Prolegis/congress.git"
+
+# Check if git clone failed
+if [ $? -ne 0 ]; then
+  echo "Git clone failed, logging the error."  >> log_file
+
+  # Send a log message indicating the failure
+  curl -X POST https://www.prolegis.com/api/congress_repo/log_message \
+  -H "Authorization: $API_KEY_PRODUCTION" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Git clone failed for the congress repository", "level": "error"}'
+
+  # Exit the script since the clone failed
+  exit 1
+fi
+
+cd congress
 git pull # Fetch the latest version of the congress repository from GitHub
 
 output_file="bill_status_codes.json" # Output JSON file
-log_file="bill_status_codes_import_log.txt" # Log file
 echo "Bill Status Codes Import started at $(date '+%Y-%m-%d %H:%M:%S')" >> log_file
 
 # Use the Rails API to fetch the current congress
@@ -55,10 +103,32 @@ echo "]" >> $output_file
 # AWS S3 Copy with variable interpolation for CURRENT_CONGRESS
 aws s3 cp bill_status_codes.json s3://content.prolegis.com/bill_status_codes/${CURRENT_CONGRESS}_congress_bill_status_codes.json --acl public-read
 
+# Check if the AWS S3 copy command was successful
+if [ $? -ne 0 ]; then
+  # Log an error message and exit if the S3 copy fails
+  echo "AWS S3 copy failed for bill_status_codes.json" >> $log_file
+
+  # Optionally send the log message via the API
+  curl -X POST https://www.prolegis.com/api/congress_repo/log_message \
+  -H "Authorization: $API_KEY_PRODUCTION" \
+  -H "Content-Type: application/json" \
+  -d "{\"message\": \"AWS S3 copy failed for bill_status_codes.json at $(date '+%Y-%m-%d %H:%M:%S')\", \"level\": \"error\"}"
+
+  # Exit the script with a non-zero exit code
+  exit 1
+fi
+
 # Trigger Async Bill Status Codes Import in Rails Application
 curl -X POST https://www.prolegis.com/api/congress_repo/trigger_import_bill_status_codes -H "Authorization: $API_KEY_PRODUCTION"
 curl -X POST https://stg.prolegis.com/api/congress_repo/trigger_import_bill_status_codes -H "Authorization: $API_KEY_STAGING"
 curl -X POST https://demo.prolegis.com/api/congress_repo/trigger_import_bill_status_codes -H "Authorization: $API_KEY_DEMO"
 
 # Log that the import has completed
-echo "Import finished at $(date '+%Y-%m-%d %H:%M:%S')" >> $log_file
+echo "Import finished at $(date '+%Y-%m-%d %H:%M:%S')" >> log_file
+
+response=$(curl -s -o /dev/null -w "%{http_code}" -X POST https://www.prolegis.com/api/congress_repo/log_message \
+-H "Authorization: $API_KEY_PRODUCTION" \
+-H "Content-Type: application/json" \
+-d "{\"message\": \"Bill Status Codes Import finished at $(date '+%Y-%m-%d %H:%M:%S')\", \"level\": \"info\"}")
+
+exit 0
