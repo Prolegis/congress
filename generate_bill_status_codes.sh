@@ -1,19 +1,20 @@
 #!/bin/bash
 
-# TODO - Make a cURL request to the Rails endpoint and store the result in a variable
-# For now, we will store it as a hard-coded variable
-CURRENT_CONGRESS=118
-echo "The current congress is: $CURRENT_CONGRESS"
+cd ~
+
+cd congress || git clone "https://$GITHUB_PERSONAL_ACCESS_TOKEN@github.com/Prolegis/congress.git" && cd congress
+git pull # Fetch the latest version of the congress repository from GitHub
+
+output_file="bill_status_codes.json" # Output JSON file
+log_file="bill_status_codes_import_log.txt" # Log file
+echo "Bill Status Codes Import started at $(date '+%Y-%m-%d %H:%M:%S')" >> log_file
+
+# Use the Rails API to fetch the current congress
+CURRENT_CONGRESS=$(curl -s -H "Authorization: $API_KEY_PRODUCTION" https://www.prolegis.com/api/congress_repo/current_congress | jq -r '.current_congress')
 
 # Download the data
 usc-run govinfo --cached --bulkdata=BILLSTATUS --congress=$CURRENT_CONGRESS
 usc-run bills --congress=$CURRENT_CONGRESS
-
-# Output JSON file at the top level
-output_file="bill_status_codes.json"
-
-# File for where our logging information will go
-log_file="bill_status_codes_import_log.txt"
 
 # Initialize an empty JSON array
 echo "[" > $output_file
@@ -56,7 +57,10 @@ echo "]" >> $output_file
 # AWS S3 Copy with variable interpolation for CURRENT_CONGRESS
 aws s3 cp bill_status_codes.json s3://content.prolegis.com/bill_status_codes/${CURRENT_CONGRESS}_congress_bill_status_codes.json --acl public-read
 
-# # TODO - Trigger Async Bill Status Codes Import in Rails Application
+# Trigger Async Bill Status Codes Import in Rails Application
+curl -X POST https://www.prolegis.com/api/congress_repo/trigger_import_bill_status_codes -H "Authorization: $API_KEY_PRODUCTION"
+curl -X POST https://stg.prolegis.com/api/congress_repo/trigger_import_bill_status_codes -H "Authorization: $API_KEY_STAGING"
+curl -X POST https://demo.prolegis.com/api/congress_repo/trigger_import_bill_status_codes -H "Authorization: $API_KEY_DEMO"
 
 # Log that the import has completed
 echo "Import finished at $(date '+%Y-%m-%d %H:%M:%S')" >> $log_file
