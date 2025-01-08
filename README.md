@@ -1,6 +1,6 @@
 
 # Prolegis/congress
-This is a fork of the UnitedStatesIO Congress repository (unitedstates/congress). It is living on an EC2 instance [here](https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#InstanceDetails:instanceId=i-0e99e6fa752b897ab).
+This repo is a fork of [unitedstates/congress](https://github.com/unitedstates/congress), hosted by Prolegis on an EC2 instance in our AWS platform under the name `UnitedStatesIO Congress Repo`.
 
 The congress repo is a series of Python tools to collect data about the bills, amendments, roll call votes, and other core data about the U.S. Congress into simple-to-use structured data files.
 
@@ -21,7 +21,7 @@ This repository was originally developed by [GovTrack.us](https://www.govtrack.u
 ## EC2 Configuration
 The purpose of this repository is to provide tools for generating congressional data that can be integrated into our Rails application. Since these tools are designed for local machine use, we cannot simply host the repository as an API to make requests.
 
-Instead, we host the entire repository on S3, enabling the following functionalities:
+Instead, we host the entire repository on an EC2 instance, enabling the following functionalities:
 * Generating congressional data using the tools in this repository.
 * Uploading the generated data to S3.
 * Triggering requests to import this data into the Rails application (e.g., having the Rails app asynchronously read from S3 after hitting a specific endpoint).
@@ -33,7 +33,7 @@ You will be prompted to enter:
 **1** **AWS Access Key ID**
 **2** **AWS Secret Access Key**
 
-⠀These credentials can be found in ~[1Password](https://my.1password.com/app#/everything/Search/p7c45mgv6bof7c5pagpgc3nolacebxppcpe2r47tl3df5lh4s4ja?itemListId=Congress+Repo)~.
+⠀These credentials can be found in 1Password.
 ### Environment Variables
 Set the following environment variables in the ~/.bashrc file to ensure proper functionality:
 * API_KEY_PRODUCTION - Enables interaction with the production Rails application.
@@ -41,9 +41,10 @@ Set the following environment variables in the ~/.bashrc file to ensure proper f
 * API_KEY_DEMO - Enables interaction with the demo Rails application.
 * GITHUB_PERSONAL_ACCESS_TOKEN - Enables cloning the latest version of the repository.
 
-The GitHub token will expire a year from when this is written (Jan 7, 2025). In the next year, it will need to be replaced. This token grants this EC2 instance only the ability to pull down the Prolegis/congress repo. Eventually, we should add a GitHub action so that when Prolegis/congress is updated, the changes get deployed to this EC2 server. 
+The credentials for the API keys and GitHub Personal Access Token can also be found in 1Password.
 
-The credentials for the API keys can be found [here](https://my.1password.com/home#/everything/Search/xftvyzu5sqoqu3z67d5b3qewlih4v3tjt4h4qf5g72hxc47dkeey?itemListId=Congress+Repo+API+Keys). The credentials for the GitHub token can be found [here](https://my.1password.com/home#/everything/Search/p7c45mgv6bof7c5pagpgc3nolayn24v4dhlgovn7ysf3qqpcin3a?itemListId=token).
+The GitHub token will expire Jan 7, 2026, at which time it will need to be replaced. This token grants this EC2 instance only the ability to pull down the Prolegis/congress repo. Eventually, we should add a GitHub action so that when Prolegis/congress is updated, the changes get deployed to this EC2 server.
+A ticket to address this issue has been written here:  https://linear.app/prolegis-engineering/issue/PRO-3243/update-congress-repo-ec2-instance-to-not-have-to-rely-on-a-github
 
 After editing `~/.bashrc`, apply the changes by running: `source ~/.bashrc`
 
