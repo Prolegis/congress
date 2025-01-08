@@ -39,12 +39,14 @@ Set the following environment variables in the ~/.bashrc file to ensure proper f
 * API_KEY_PRODUCTION - Enables interaction with the production Rails application.
 * API_KEY_STAGING - Enables interaction with the staging Rails application.
 * API_KEY_DEMO - Enables interaction with the demo Rails application.
-* GITHUB_PERSONAL_ACCESS_TOKEN - Enables cloning the latest version of the repository.
 
-The credentials for the API keys and GitHub Personal Access Token can also be found in 1Password.
+The credentials for the API keys can also be found in 1Password.
 
-The GitHub token will expire Jan 7, 2026, at which time it will need to be replaced. This token grants this EC2 instance only the ability to pull down the Prolegis/congress repo. Eventually, we should add a GitHub action so that when Prolegis/congress is updated, the changes get deployed to this EC2 server.
-A ticket to address this issue has been written here:  https://linear.app/prolegis-engineering/issue/PRO-3243/update-congress-repo-ec2-instance-to-not-have-to-rely-on-a-github
+### Deploying changes
+Right now, when a change is merged into the `master` branch, the repo is not deployed to the EC2 instance. Therefore, developers are required to go into the EC2 console and manually pull down the latest version of the congress repo. This is not ideal because it requires another extra step.
+
+Eventually, we should add a GitHub action so that when Prolegis/congress is updated, the changes get deployed to this EC2 server.
+A ticket to address this issue has been written here:  https://linear.app/prolegis-engineering/issue/PRO-3243/update-congress-repo-to-automatically-deploy-to-ec2-whenever-it-is
 
 After editing `~/.bashrc`, apply the changes by running: `source ~/.bashrc`
 
