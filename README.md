@@ -33,14 +33,15 @@ You will be prompted to enter:
 **1** **AWS Access Key ID**
 **2** **AWS Secret Access Key**
 
-⠀These credentials can be found in 1Password.
+⠀These credentials can be found in 1Password (search for `EC2 Congress Repo Amazon Access Keys`).
+
 ### Environment Variables
 Set the following environment variables in the ~/.bashrc file to ensure proper functionality:
 * API_KEY_PRODUCTION - Enables interaction with the production Rails application.
 * API_KEY_STAGING - Enables interaction with the staging Rails application.
 * API_KEY_DEMO - Enables interaction with the demo Rails application.
 
-The credentials for the API keys can also be found in 1Password.
+These credentials can also be found in 1Password (search for `EC2 Congress Repo API Keys`).
 
 ### Deploying changes
 Right now, when a change is merged into the `master` branch, the repo is not deployed to the EC2 instance. Therefore, developers are required to go into the EC2 console and manually pull down the latest version of the congress repo. This is not ideal because it requires another extra step.
@@ -49,6 +50,9 @@ Eventually, we should add a GitHub action so that when Prolegis/congress is upda
 A ticket to address this issue has been written here:  https://linear.app/prolegis-engineering/issue/PRO-3243/update-congress-repo-to-automatically-deploy-to-ec2-whenever-it-is
 
 After editing `~/.bashrc`, apply the changes by running: `source ~/.bashrc`
+
+### Accessing the console
+There are two ways to access the console for this EC2 instance. The first is to go through the AWS web portal itself. The second is to SSH into the instance. You can SSH into the instance using the .pem file in 1Password (search for `EC2 Congress Repo PEM Key`).
 
 ## Additional Package Installation
 Install the `jq` package for parsing JSON responses. Use the following command `sudo yum install jq`
