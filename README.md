@@ -1,8 +1,10 @@
-## unitedstates/congress
 
-This is a community-run project to develop Python tools to collect data about the bills, amendments, roll call votes, and other core data about the U.S. Congress into simple-to-use structured data files.
+# Prolegis/congress
+This is a fork of the UnitedStatesIO Congress repository (unitedstates/congress). It is living on an EC2 instance [here](https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#InstanceDetails:instanceId=i-0e99e6fa752b897ab).
 
-The tools include:
+The congress repo is a series of Python tools to collect data about the bills, amendments, roll call votes, and other core data about the U.S. Congress into simple-to-use structured data files.
+
+The tools in the congress repo include:
 
 * Downloading the [official bulk bill status data](https://github.com/usgpo/bill-status) from Congress, the official source of information on the life and times of legislation, and converting the data to an easier-to-use format.
 
@@ -16,8 +18,40 @@ Read about the contents and schema in the [documentation](https://github.com/uni
 
 This repository was originally developed by [GovTrack.us](https://www.govtrack.us) and the Sunlight Foundation in 2013 (see [Eric's blog post](https://sunlightfoundation.com/blog/2013/08/20/a-modern-approach-to-open-data/)) and is currently maintained by GovTrack.us and other contributors. For more information about data in Congress, see the [Congressional Data Coalition](https://congressionaldata.org/).
 
+## EC2 Configuration
+The purpose of this repository is to provide tools for generating congressional data that can be integrated into our Rails application. Since these tools are designed for local machine use, we cannot simply host the repository as an API to make requests.
 
-### Setting Up
+Instead, we host the entire repository on S3, enabling the following functionalities:
+* Generating congressional data using the tools in this repository.
+* Uploading the generated data to S3.
+* Triggering requests to import this data into the Rails application (e.g., having the Rails app asynchronously read from S3 after hitting a specific endpoint).
+
+### AWS Configuration
+To enable S3 uploads, configure AWS access by running the following command in the terminal: `aws configure`
+
+You will be prompted to enter:
+**1** **AWS Access Key ID**
+**2** **AWS Secret Access Key**
+
+⠀These credentials can be found in ~[1Password](https://my.1password.com/app#/everything/Search/p7c45mgv6bof7c5pagpgc3nolacebxppcpe2r47tl3df5lh4s4ja?itemListId=Congress+Repo)~.
+### Environment Variables
+Set the following environment variables in the ~/.bashrc file to ensure proper functionality:
+* API_KEY_PRODUCTION - Enables interaction with the production Rails application.
+* API_KEY_STAGING - Enables interaction with the staging Rails application.
+* API_KEY_DEMO - Enables interaction with the demo Rails application.
+* GITHUB_PERSONAL_ACCESS_TOKEN - Enables cloning the latest version of the repository.
+
+The GitHub token will expire a year from when this is written (Jan 7, 2025). In the next year, it will need to be replaced. This token grants this EC2 instance only the ability to pull down the Prolegis/congress repo. Eventually, we should add a GitHub action so that when Prolegis/congress is updated, the changes get deployed to this EC2 server. 
+
+The credentials for the API keys can be found [here](https://my.1password.com/home#/everything/Search/xftvyzu5sqoqu3z67d5b3qewlih4v3tjt4h4qf5g72hxc47dkeey?itemListId=Congress+Repo+API+Keys). The credentials for the GitHub token can be found [here](https://my.1password.com/home#/everything/Search/p7c45mgv6bof7c5pagpgc3nolayn24v4dhlgovn7ysf3qqpcin3a?itemListId=token).
+
+After editing `~/.bashrc`, apply the changes by running: `source ~/.bashrc`
+
+## Additional Package Installation
+Install the `jq` package for parsing JSON responses. Use the following command `sudo yum install jq`
+
+### Setting Up the Rest of the Project
+**The following steps were provided directly from the unitedstates/congress's README**
 
 This project is tested using Python 3.
 
@@ -96,7 +130,6 @@ Pull requests with patches are awesome. Unit tests are strongly encouraged ([exa
 
 The best way to file a bug is to [open a ticket](https://github.com/unitedstates/congress/issues).
 
-
 ### Running tests
 
 To run this project's unit tests:
@@ -110,7 +143,5 @@ To run this project's unit tests:
 This project is [dedicated to the public domain](LICENSE). As spelled out in [CONTRIBUTING](CONTRIBUTING.md):
 
 > The project is in the public domain within the United States, and copyright and related rights in the work worldwide are waived through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
-
 > All contributions to this project will be released under the CC0 dedication. By submitting a pull request, you are agreeing to comply with this waiver of copyright interest.
-
 [![Build Status](https://travis-ci.org/unitedstates/congress.svg?branch=master)](https://travis-ci.org/unitedstates/congress)
