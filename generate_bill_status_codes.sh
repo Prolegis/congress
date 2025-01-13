@@ -74,6 +74,15 @@ echo "Parse data ended at $(date '+%Y-%m-%d %H:%M:%S')" >> $log_file
 #### STEP 4 - UPLOAD DATA TO AWS S3 BUCKET
 #
 
+# After generating the JSON file with the required bill status data,
+# we navigate back to the root directory of the `congress` project.
+# This ensures that the working directory is correctly set to access the
+# generated file (`bill_status_codes.json`) while executing the AWS S3
+# upload command. Maintaining the correct directory is crucial for
+# seamless file handling and avoiding any potential errors during the
+# upload process.
+cd ~/congress
+
 echo "AWS Upload Started at $(date '+%Y-%m-%d %H:%M:%S')" >> $log_file
 
 aws s3 cp bill_status_codes.json s3://content.prolegis.com/bill_status_codes/${CURRENT_CONGRESS}_congress_bill_status_codes.json --acl public-read
